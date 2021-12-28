@@ -6,6 +6,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+WIDTH = 500
+HEIGHT = 500
 
 
 class Direction(Enum):
@@ -30,6 +32,22 @@ class Snake:
         ]
         self.screen = None
         self.clock = None
+        self.has_fruit = False
+        self.fruit = None
+        self.fruit_position = []
+        self.board = None
+        self.score = 0
+
+    def restart(self):
+        self.cells = []
+        self.direction = Direction.RIGHT
+        self.head = None
+        self.body = [
+            [70, 50],
+            [80, 50],
+            [90, 50],
+            [100, 50]
+        ]
         self.has_fruit = False
         self.fruit = None
         self.fruit_position = []
@@ -64,8 +82,8 @@ class Snake:
         valid = False
         while not valid:
             valid = True
-            fruit_x = round(random.randrange(0, 500) / 10.0) * 10.0
-            fruit_y = round(random.randrange(0, 500) / 10.0) * 10.0
+            fruit_x = round(random.randrange(0, 490) / 10.0) * 10.0
+            fruit_y = round(random.randrange(0, 490) / 10.0) * 10.0
             for cell in self.body:
                 if (fruit_x == cell[0]) and (
                         fruit_y == cell[1]):  # Make sure that the new fruit is not in the snake's body
@@ -135,22 +153,44 @@ class Snake:
         has_eaten = self.fruit_collision()
         self.update_position(has_eaten)
         self.clock.tick(self.speed)
-        pygame.display.update()
         return self.is_game_over()
+
+    def draw_end_screen(self):
+        # If game isn't over, draw this stuff.
+        font = pygame.font.Font(None, 56)
+        game_over = font.render("GAME OVER", True, WHITE)
+        game_over_rect = game_over.get_rect()
+        game_over_x = self.screen.get_width() / 2 - game_over_rect.width / 2
+        game_over_y = self.screen.get_height() / 2 - game_over_rect.height / 2
+
+        smaller_font = pygame.font.Font(None, 30)
+        press_space = smaller_font.render("Press space to restart", True, WHITE)
+        press_space_rect = game_over.get_rect()
+        press_space_x = self.screen.get_width() / 2 - game_over_rect.width / 2 + 15
+        press_space_y = self.screen.get_height() / 2 - press_space_rect.height / 2 + 40
+
+        self.screen.blit(game_over, [game_over_x, game_over_y])
+        self.screen.blit(press_space, [press_space_x, press_space_y])
 
     def run(self):
         self.create_window()
         running = True
+        game_over = False
         while running:
-            game_over = self.game_loop()
-            if game_over:
-                running = False
+            if not game_over:
+                game_over = self.game_loop()
+            else:
+                self.draw_end_screen()
+                # running = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
+                    if event.key == pygame.K_SPACE and game_over:
+                        self.restart()
+                        game_over = False
                     if event.key == pygame.K_LEFT:
                         if self.direction != Direction.RIGHT:
                             self.direction = Direction.LEFT
@@ -163,10 +203,11 @@ class Snake:
                     if event.key == pygame.K_DOWN:
                         if self.direction != Direction.UP:
                             self.direction = Direction.DOWN
+            pygame.display.update()
 
         pygame.quit()
 
     def create_window(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((500, 500))
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
