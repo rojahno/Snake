@@ -1,6 +1,5 @@
 from enum import Enum
 import random
-
 import pygame
 
 BLACK = (0, 0, 0)
@@ -35,6 +34,7 @@ class Snake:
         self.fruit = None
         self.fruit_position = []
         self.board = None
+        self.score = 0
 
     def update_position(self, has_eaten: bool):
         snake_body = self.body[::-1]  # The snake with reversed order list
@@ -60,30 +60,45 @@ class Snake:
             if not has_eaten:
                 del self.body[0]
 
-    def spawn_fruit(self):
-        fruit_x = round(random.randrange(0, 500) / 10.0) * 10.0
-        fruit_y = round(random.randrange(0, 500) / 10.0) * 10.0
-        self.fruit_position = [fruit_x, fruit_y]
+    def spawn_fruit(self):  # Sets the new random location of the fruit
+        valid = False
+        while not valid:
+            valid = True
+            fruit_x = round(random.randrange(0, 500) / 10.0) * 10.0
+            fruit_y = round(random.randrange(0, 500) / 10.0) * 10.0
+            for cell in self.body:
+                if (fruit_x == cell[0]) and (
+                        fruit_y == cell[1]):  # Make sure that the new fruit is not in the snake's body
+                    valid = False
+                    break
+            print(f'X: {fruit_x} Y: {fruit_y}')
+            self.fruit_position = [fruit_x, fruit_y]
 
-    def draw_fruit(self):
+    def draw_fruit(self):  # Draws the fruit
         fruit_x, fruit_y = self.fruit_position
         self.fruit = pygame.draw.rect(self.screen, RED, (fruit_x, fruit_y, self.size, self.size))
         self.has_fruit = True
 
     def fruit_collision(self):
-        if self.fruit.colliderect(self.head):
+        if self.fruit.colliderect(self.head):  # Checks if the snake has collided with the fruit
             self.has_fruit = False
+            self.score += 1
             return True
         return False
 
+    def draw_score(self):
+        font = pygame.font.Font(None, 25)
+        text = font.render(f'Score: {self.score}', True, WHITE)  # Draws the score
+        self.screen.blit(text, [20, 20])
+
     def body_collision(self):
         for block in self.cells:
-            if self.head.colliderect(block):
+            if self.head.colliderect(block):  # Check if the snake has collided with itself
                 return True
         return False
 
     def edge_collision(self):
-        if self.board.contains(self.head):
+        if self.board.contains(self.head):  # Checks if the snake head is still inside the board
             return False
         return True
 
@@ -109,6 +124,7 @@ class Snake:
         self.screen.fill(BLACK)  # Sets the background color
         self.board = pygame.draw.rect(self.screen, BLACK,
                                       (0, 0, 500, 500))  # Draws the board rect to check for out-of-map collision.
+        self.draw_score()  # Draws the score
         self.draw_fruit()  # Draws the fruit
         self.draw_snake()  # Draws the snake
 
