@@ -6,8 +6,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
-WIDTH = 500
-HEIGHT = 500
+WIDTH = 800
+HEIGHT = 600
 
 
 class Direction(Enum):
@@ -82,8 +82,8 @@ class Snake:
         valid = False
         while not valid:
             valid = True
-            fruit_x = round(random.randrange(0, 490) / 10.0) * 10.0
-            fruit_y = round(random.randrange(0, 490) / 10.0) * 10.0
+            fruit_x = round(random.randrange(0, WIDTH - 10) / 10.0) * 10.0
+            fruit_y = round(random.randrange(0, HEIGHT - 10) / 10.0) * 10.0
             for cell in self.body:
                 if (fruit_x == cell[0]) and (
                         fruit_y == cell[1]):  # Make sure that the new fruit is not in the snake's body
@@ -141,7 +141,7 @@ class Snake:
     def draw_game(self):
         self.screen.fill(BLACK)  # Sets the background color
         self.board = pygame.draw.rect(self.screen, BLACK,
-                                      (0, 0, 500, 500))  # Draws the board rect to check for out-of-map collision.
+                                      (0, 0, WIDTH, HEIGHT))  # Draws the board rect to check for out-of-map collision.
         self.draw_score()  # Draws the score
         self.draw_fruit()  # Draws the fruit
         self.draw_snake()  # Draws the snake
